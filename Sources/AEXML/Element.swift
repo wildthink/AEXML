@@ -9,12 +9,19 @@ import Foundation
 import FoundationXML
 #endif
 
+extension AEXMLElement {
+    open subscript(dynamicMember key: String) -> AEXMLElement {
+        self[key]
+    }
+}
+
 /**
     This is base class for holding XML structure.
 
     You can access its structure by using subscript like this: `element["foo"]["bar"]` which would
     return `<bar></bar>` element from `<element><foo><bar></bar></foo></element>` XML as an `AEXMLElement` object.
 */
+@dynamicMemberLookup
 open class AEXMLElement {
     
     // MARK: - Properties
@@ -34,6 +41,9 @@ open class AEXMLElement {
     /// XML Element attributes.
     open var attributes: [String : String]
     
+    /// Element attributes for client code at runtime
+    open var context: [String : Any]
+
     /// Error value (`nil` if there is no error).
     open var error: AEXMLError?
     
@@ -73,6 +83,7 @@ open class AEXMLElement {
         self.name = name
         self.value = value
         self.attributes = attributes
+        self.context = [:]
     }
     
     // MARK: - XML Read
