@@ -16,10 +16,11 @@ internal class AEXMLParser: NSObject, XMLParserDelegate {
     
     let document: AEXMLDocument
     let data: Data
-    
-    var currentParent: AEXMLElement?
-    var currentElement: AEXMLElement?
-    var currentValue = String()
+
+    var stack: [AEXMLElement] = []
+    var top: AEXMLElement { stack.last ?? document }
+    var currentElement: AEXMLElement? { stack.last }
+    var currentValue: String?
     
     var parseError: Error?
 
@@ -32,8 +33,6 @@ internal class AEXMLParser: NSObject, XMLParserDelegate {
     init(document: AEXMLDocument, data: Data) {
         self.document = document
         self.data = data
-        currentParent = document
-        
         super.init()
     }
     
@@ -62,26 +61,31 @@ internal class AEXMLParser: NSObject, XMLParserDelegate {
                 namespaceURI: String?,
                 qualifiedName qName: String?,
                 attributes attributeDict: [String : String]) {
-        currentValue = String()
-        currentElement = currentParent?.addChild(name: elementName, attributes: attributeDict)
-        currentParent = currentElement
+
+        // PUSH
+        let it = top.addChild(name: elementName, attributes: attributeDict)
+        stack.append(it)
+        currentValue = nil
     }
     
     func parser(_ parser: XMLParser, foundCharacters string: String) {
-        currentValue.append(string)
-        currentElement?.value = currentValue.isEmpty ? nil : currentValue
+        currentValue = if let currentValue {
+            currentValue.appending(string)
+        } else {
+            string
+        }
     }
     
     func parser(_ parser: XMLParser,
                 didEndElement elementName: String,
                 namespaceURI: String?,
                 qualifiedName qName: String?) {
-        if parserSettings.shouldTrimWhitespace {
-            currentElement?.value = currentElement?.value?
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-        currentParent = currentParent?.parent
-        currentElement = nil
+
+        currentElement?.value = parserSettings.shouldTrimWhitespace
+        ? currentValue?.trimmingCharacters(in: .whitespacesAndNewlines)
+        : currentValue
+        // POP
+        _ = stack.popLast()
     }
     
     func parser(_ parser: XMLParser, parseErrorOccurred parseError: Error) {

@@ -1,5 +1,15 @@
 # Changelog
 
+## Main
+
+- Added Context
+- Added XMLIterator
+- Added print of "xpath"
+- Added index, depth, hasSiblings, hasTwin
+- Removed Xcode project
+- Removed cocoapod support
+- Refactored Parser
+
 ## Version 4.7.0
 
 - Merged: #183, #186
