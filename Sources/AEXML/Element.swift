@@ -9,8 +9,8 @@ import Foundation
 import FoundationXML
 #endif
 
-extension AEXMLElement {
-    open subscript(dynamicMember key: String) -> AEXMLElement {
+public extension AEXMLElement {
+    subscript(dynamicMember key: String) -> AEXMLElement {
         self[key]
     }
 }
@@ -23,6 +23,7 @@ extension AEXMLElement {
 */
 @dynamicMemberLookup
 open class AEXMLElement {
+    public typealias AttributeValue = String
     
     // MARK: - Properties
     
@@ -42,7 +43,7 @@ open class AEXMLElement {
     open var attributes: [String : String]
     
     /// Element attributes for client code at runtime
-    open var context: [String : Any]
+    open var context: Slots
 
     /// Error value (`nil` if there is no error).
     open var error: AEXMLError?
@@ -83,7 +84,7 @@ open class AEXMLElement {
         self.name = name
         self.value = value
         self.attributes = attributes
-        self.context = [:]
+        self.context = .init()
     }
     
     // MARK: - XML Read
