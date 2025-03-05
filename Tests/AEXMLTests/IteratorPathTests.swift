@@ -85,9 +85,10 @@ extension AEXMLElement {
     }
     
     func matches(selectors: [XMLSelector]) -> Bool {
-        guard let last = selectors.last, last == self.selector {
-
-        }
+        true
+//        guard let last = selectors.last, last == self.selector {
+//
+//        }
 //        let me = selectors
 //        for (lhs, rhs) in zip(me, selectors).reversed() {
 //            if lhs.path != rhs.path {
