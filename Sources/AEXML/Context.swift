@@ -33,12 +33,18 @@ public extension Slots {
     }
 }
 
-extension AEXMLDocument {
-    override var xpath: String { "" }
-}
+//extension AEXMLDocument {
+//    override var xpath: String { "" }
+//}
 
 extension AEXMLElement {
-    @objc var xpath: String {
+    var selectors: [XMLSelector] {
+        var p = parent?.selectors ?? []
+        p.append(XMLSelector(path: name, index: index))
+        return p
+    }
+
+    var xpath: String {
         let p = parent?.xpath ?? ""
         return if hasTwin {
             "\(p)/\(name)[\(self.index)]"
@@ -78,6 +84,61 @@ extension AEXMLElement: Equatable, Identifiable {
     }
 }
 
+public struct XMLSelector: Equatable, Hashable {
+    public var path: String
+    public var index: Int?
+}
+
+extension XMLSelector: CustomStringConvertible {
+    public var description: String {
+        if let i = index {
+            return "\(path)[\(i)]"
+        } else {
+            return path
+        }
+    }
+}
+
+extension XMLSelector {
+    init(parse element: Substring) throws {
+        let parts = element.split(separator: "[")
+//        guard parts.count == 2 else {
+//            throw NSError(domain: "InvalidElementFormat", code: 1, userInfo: [
+//                "message": "Malformed XPath",
+//                "element": String(element),
+//            ])
+//        }
+        
+
+        let indexString = if parts.count == 2 {
+            parts[1].split(separator: "]")[0]
+        } else { Substring() }
+        if indexString.isEmpty {
+            self.index = nil
+            self.path = String(element)
+        } else {
+            self.index = Int(indexString)
+            self.path = String(parts.first!)
+        }
+    }
+    
+    // Example
+    // let list: [XMLSelector] = XMLSelector.parse("path/to/element[1]/another[2]")
+    public static func parse(_ path: String) throws -> [XMLSelector] {
+        let parts = path.split(separator: "/")
+        return try parts.enumerated().compactMap { offset, element in
+            do {
+                return try XMLSelector(parse: element)
+            } catch {
+                throw NSError(domain: "InvalidXPathFormat", code: 1, userInfo: [
+                    "message": "Malformed XPath",
+                    "path": path,
+                    "element": element,
+                    ])
+            }
+        }
+    }
+}
 /**
  The key difference between classifiers and adjectives lies in their function and how they interact with nouns in a language.
 
